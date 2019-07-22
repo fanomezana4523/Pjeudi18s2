@@ -1,30 +1,36 @@
-gem'nokogiri'
+require 'rubygems'
 require 'nokogiri'
 require 'open-uri'
-   
- def download_page(tab)   
-         page=Nokogiri::HTML(open(tab))
-        return page 
+def get_page
+    page = Nokogiri::HTML(open("https://coinmarketcap.com/all/views/all/"))
+    return page
 end
- 
-def tableaux 
-	  result = Array.new ()
-     tableau = Array.new()
-     tabb   = Array.new()
-     res  = Array.new()
- 
-   page   = download_page("https://coinmarketcap.com/all/views/all/") 
-   tabb   = page.xpath('//h1[@class="text-left col-symbol"]')
-   price  = page.xpath('//td[@class="no-wrap text-right"]')
-          i = 0 
-          j = 0
-         while i< tabb.length
-          	result[i] = tabb[j].text  
-            result[i+1] = price[j].text.scan(/\d/).join('').to_f
-            #tableau = download_page().xpath('//td[@class="text-left col-symbol"]')[i].text
-              j +=1
-              i +=2
-        end
-       res = [Hash[*result]]
+def scrapp_symbols
+    page = get_page
+    symbols = page.xpath('//*[@class="text-left col-symbol"]')
+    symbols_array = []
+    symbols.each do |symbol|
+    symbols_array<< symbol.text
+    end
+    return symbols_array
 end
-  puts tableaux 
+def scrapp_prices
+    page = get_page
+    prices = page.xpath('//*[@class="price"]')
+    prices_array = []
+    prices.each do |price|
+        prices_array << price.text[1..-1].to_f
+    end
+    return prices_array
+end
+def crypto_master
+    symbols_array = scrapp_symbols
+    prices_array = scrapp_prices
+    a = []    
+    symbols_array.each_with_index do |key, value|
+    a << {key => (prices_array)[value]}
+    end
+    puts a
+    return a
+end
+crypto_master
